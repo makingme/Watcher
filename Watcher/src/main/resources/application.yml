@@ -1,0 +1,11 @@
+spring:
+  profiles:
+    active: local
+  datasource:
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url: jdbc:log4jdbc:mariadb://121.161.253.13:3307/makingme?characterEncoding=UTF-8&serverTimezone=Asia/Seoul&interactiveClient=true&autoReconnect=true&autoReconnectForPools=true,jdbc:mariadb://121.161.253.13:3307/makingme?characterEncoding=UTF-8&serverTimezone=Asia/Seoul&interactiveClient=true&autoReconnect=true&autoReconnectForPools=true
+    username: kibum,kibum
+    password: Make!009!009,Make!009!009
+
+spec:
+  target-path : static/TARGET.json
