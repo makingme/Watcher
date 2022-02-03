@@ -26,7 +26,8 @@ import com.jolbox.bonecp.BoneCPDataSource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import kr.uracle.ums.monit.mng.EncrytManager;
+import kr.uracle.ums.monit.utils.EncrytUtil;
+
 
 
 @ComponentScan(basePackages = {"kr.uracle.ums.monit"},useDefaultFilters = true)
@@ -38,7 +39,7 @@ public class DatasourceConfig {
     private final String CONFIG1 = "db1.properties";
     
     @Autowired
-    EncrytManager encrytManager;
+    EncrytUtil encrytManager;
     
     @Value("${spring.datasource.driver-class-name}")
     private String driverClassName;

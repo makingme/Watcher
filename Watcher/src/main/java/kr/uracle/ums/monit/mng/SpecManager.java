@@ -12,6 +12,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -21,8 +24,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
+@Order(1)
 @Component
-public class SpecManager {
+public class SpecManager implements ApplicationRunner{
 	
 	private Logger log = LoggerFactory.getLogger("Developer");
 	
@@ -35,11 +39,14 @@ public class SpecManager {
 
 	public SpecManager(@Value("${spec.target-path}")String targetSpecPath) throws Exception {
 		this.targetSpecPath = targetSpecPath;
-		loadJsonToMap(targetSpecPath);
 	}
 	
     public Object specMap(String target) {
         return specMap.get(target);
+    }
+    
+    public Map<String, Object> getSpecMap() {
+        return specMap;
     }
 	
 	public void loadJsonToMap(String path) throws Exception {
@@ -48,10 +55,7 @@ public class SpecManager {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))	) {
 			StringBuilder sb=new StringBuilder();
 			String val=null;
-			while((val=br.readLine()) !=null) {
-				sb.append(val);
-				val=null;
-			}
+			while((val=br.readLine()) !=null) sb.append(val);
 			
 			specMap = gson.fromJson(sb.toString(),  new TypeToken<Map<String, Object>>(){}.getType());
 			log.info("============================================================");
@@ -69,6 +73,11 @@ public class SpecManager {
 			throw new JsonSyntaxException("유효하지 않은 JSON 포맷");
 			
 		}
+	}
+
+	@Override
+	public void run(ApplicationArguments args) throws Exception {
+		loadJsonToMap(targetSpecPath);
 	}
 
 }

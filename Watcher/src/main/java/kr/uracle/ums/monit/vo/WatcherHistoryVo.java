@@ -17,8 +17,9 @@ public class WatcherHistoryVo {
 	private String message;
 	
 	public long autoSetLeadTime() {
-		setLeadTime(getEndTime() - getStartTime());
-		return getLeadTime();
+		long leadTime = computeLeadTime();
+		setLeadTime(leadTime);
+		return leadTime;
 	}
 	
 	public long computeLeadTime() {

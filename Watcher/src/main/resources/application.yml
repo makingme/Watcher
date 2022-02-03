@@ -1,11 +1,17 @@
 spring:
   profiles:
     active: local
+  lifecycle:    timeout-per-shutdown-phase: 30s
+  task:    execution:      shutdown:        await-termination: true
+        await-termination-period: 30
   datasource:
     driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
     url: jdbc:log4jdbc:mariadb://121.161.253.13:3307/makingme?characterEncoding=UTF-8&serverTimezone=Asia/Seoul&interactiveClient=true&autoReconnect=true&autoReconnectForPools=true,jdbc:mariadb://121.161.253.13:3307/makingme?characterEncoding=UTF-8&serverTimezone=Asia/Seoul&interactiveClient=true&autoReconnect=true&autoReconnectForPools=true
     username: kibum,kibum
     password: Make!009!009,Make!009!009
+
+
+server:  shutdown: graceful
 
 spec:
   target-path : static/TARGET.json

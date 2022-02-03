@@ -1,4 +1,4 @@
-package kr.uracle.ums.monit.mng;
+package kr.uracle.ums.monit.utils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 import kr.msp.util.AES128Cipher;
 
 @Component
-public class EncrytManager {
+public class EncrytUtil {
 	
-	private static final Logger log = LoggerFactory.getLogger(EncrytManager.class);
+	private static final Logger log = LoggerFactory.getLogger(EncrytUtil.class);
 	
 	private final static AES128Cipher tool =  AES128Cipher.getInstance();
 	
