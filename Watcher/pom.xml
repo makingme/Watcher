@@ -17,6 +17,7 @@
 		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.gson>2.8.9</version.gson>
+		<version.logback>1.2.1</version.logback>		
 	</properties>
 	<dependencies>
 		<dependency>
@@ -85,7 +86,38 @@
             <groupId>com.jolbox</groupId>
             <artifactId>bonecp-spring</artifactId>
             <version>0.8.0.RELEASE</version>
-        </dependency>				
+        </dependency>
+        
+		<!-- slf4j implemented logback -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${version.logback}</version>
+		</dependency>
+		<!-- JDBC logging -->
+		<dependency>
+			<groupId>org.bgee.log4jdbc-log4j2</groupId>
+			<artifactId>log4jdbc-log4j2-jdbc4.1</artifactId>
+			<version>1.16</version>
+		</dependency>
+		<!-- URACLE core -->	
+        <dependency>
+            <groupId>kr.msp</groupId>
+            <artifactId>msp-core</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        
+		<!-- Apache commons-lang3 Library -->
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-lang3</artifactId>
+		    <version>3.12.0</version>
+		</dependency>        
+		<dependency>
+		    <groupId>commons-codec</groupId>
+		    <artifactId>commons-codec</artifactId>
+		    <version>1.15</version>
+		</dependency>		
 	</dependencies>
 
 	<build>
