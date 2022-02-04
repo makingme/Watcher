@@ -10,19 +10,15 @@ public class WatcherHistoryVo {
 	private WatcherTarget type;
 	private WatcherState status;
 	private long statusTime;
-	private long createTime;
-	private long startTime;
-	private long endTime;
 	private long leadTime;
+	private long alarmTime;
 	private String message;
 	
-	public long autoSetLeadTime() {
-		long leadTime = computeLeadTime();
+	public long autoSetLeadTime(long now) {
+		long leadTime = now -getStatusTime();
 		setLeadTime(leadTime);
 		return leadTime;
 	}
 	
-	public long computeLeadTime() {
-		return getEndTime() - getStartTime();
-	}
+
 }

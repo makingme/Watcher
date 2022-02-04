@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.annotation.PreDestroy;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +62,6 @@ public abstract class Watcher implements Runnable{
 		this.target = target;
 		this.config = config;
 		history.setStatus(WatcherState.CREATE);
-		history.setCreateTime(now(true));
 		history.setStatusTime(now(false));
 		history.setMessage("Just Created");
 	}
@@ -71,23 +72,35 @@ public abstract class Watcher implements Runnable{
 	// 후처리 활성화여부
 	protected boolean doPost = false;
 	
-	protected Long idleMils = 30000L;
+	protected Long idleMils = 3000L;
 	// 쓰레드명
 	protected String watcherName = "NONAME";
 	
 	// 공통 초기화
 	public boolean init() {
-		if(config == null) return false;
-		
-		//와처 이름 설정
-		if(ObjectUtils.isNotEmpty(config.get("NAME"))) this.watcherName = config.get("NAME").toString();
 		//와처 히스토리 기록
 		history.setWatcherName(watcherName);
 		history.setType(target);
 		history.setStatus(WatcherState.INIT);
 		history.setStatusTime(now(true));
+		
+		if(config == null) {
+			log.error("WATCHER 설정을 불러오지 못함");
+			return false;
+		}
+		
+		//와처 이름 설정
+		if(ObjectUtils.isEmpty(config.get("NAME"))) {
+			log.error("WATCHER NAME 설정 누락");
+			return false;
+		}
+		this.watcherName = config.get("NAME").toString();
+		
 		//와처 알람채널 설정
-		if(ObjectUtils.isEmpty(config.get("NOTICE"))) return false;
+		if(ObjectUtils.isEmpty(config.get("NOTICE"))) {
+			log.error("NOTICE 설정이 없습니다.");
+			return false;
+		}
 		if(ObjectUtils.isNotEmpty(config.get("NOTICLASS"))) {
 			// 노티피케이션 커스텀 클래스 생성
 			try {
@@ -103,35 +116,49 @@ public abstract class Watcher implements Runnable{
 		try {
 			notificater.setChannel( NotificationType.valueOf(config.get("NOTICE").toString()));
 		}catch(IllegalArgumentException e) {
-			log.error("{}는 지원하지 않는 NOTICE 타입입니다.", config.get("NOTICE").toString());
+			log.error("{}는 지원하지 않는 NOTICE 타입", config.get("NOTICE").toString());
 			return false;
 		}
+		
+		//알람자 이름설정
+		notificater.setName(target.toString()+notificater.getChannel().toString());
+		
 		//알림 발신 정보 설정
-		if(ObjectUtils.isEmpty(config.get("SENDER"))) return false;
+		if(ObjectUtils.isEmpty(config.get("SENDER"))) {
+			log.error("SENDER(발신정보) 설정 누락");
+			return false;
+		}
+		
 		notificater.setSenderInfo(config.get("SENDER").toString());
 		
 		//알림 메시지 원장 설정
-		if(ObjectUtils.isEmpty(config.get("MESSAGE"))) return false;
+		if(ObjectUtils.isEmpty(config.get("MESSAGE"))) {
+			log.error("알림메시지(MESSAGE) 설정 누락");
+			return false;
+		}
 		notificater.setLodgerMessage(config.get("MESSAGE").toString());
 		
 		//와처 감시 주기 지정 - DEFAULT 30s(30000ms)
-		if(ObjectUtils.isNotEmpty(config.get("CYCLE"))) idleMils = Long.valueOf(config.get("CYCLE").toString().replaceAll("\\D", "0")); 
+		if(ObjectUtils.isNotEmpty(config.get("CYCLE"))) idleMils = Long.valueOf(config.get("CYCLE").toString().replaceAll("\\D", "0"))*1000; 
 		
 		//알림 수신 대상자 설정
 		@SuppressWarnings("unchecked")
 		List<String> targetNames = (List<String>)config.get("TARGETS");
 		try {
 			for(String key :targetNames) {
-				if(config.get("key") == null || !(config.get("key") instanceof List) ) continue;
+				if(config.get(key) == null || !(config.get(key) instanceof List) ) continue;
 				notificater.addAllTarget(gson.fromJson(config.get(key).toString(), new TypeToken<List<TargetInfo>>(){}.getType()));
 			}		
 		}catch(JsonSyntaxException e) {
-			log.error("{} 설정 중 타겟정보 포맷이 옳바르지 않습니다.", watcherName);
+			log.error("{} 설정 중 타겟정보 포맷이 옳바르지 않음", watcherName);
 			return false;
 		}
 		
 		//알림 수신 대상자 확인
-		if(notificater.getTargetCount() == 0) return false;
+		if(notificater.getTargetCount() == 0) {
+			log.error("알림 수신대상자 없음");
+			return false;
+		}
 		
 		//기능와처 초기화 영역 - 와처 동작여부 활성화 필히포함시켜야함 isWorking=true;
 		return extraInit();
@@ -146,35 +173,56 @@ public abstract class Watcher implements Runnable{
 	public void run() {
 
 		isWorking = init();
-		if(!isWorking) log.error("초기화 실패로 {} 종료 됨", watcherName);
+		if(!isWorking) {
+			log.error("초기화 실패로 {} 종료 됨", watcherName);
+			System.exit(0);
+		}
 		while(isWorking) {
-			history.setStartTime(now(true));
+			history.autoSetLeadTime(now(true));
+			history.setStatus(WatcherState.ING);
+			history.setStatusTime(now(false));
 			int resultCode=watch();
 			if(doPost)postDoing(resultCode);
-			history.setEndTime(now(true));
-			history.autoSetLeadTime();
+			history.autoSetLeadTime(now(true));
 			history.setStatus(WatcherState.DONE);
 			history.setStatusTime(now(false));
+			
 
+			if(resultCode ==1) { // 알람
+				resultCode = sendAlram();
+			}else if(resultCode == -1) { // 재기동 필요 에러
+				
+			}
 			synchronized(this){
 				history.setStatus(WatcherState.WAIT);
 				history.setStatusTime(now(true));
-				while ( idleMils > 0 ){
+				long t_wait = 0 ;
+				log.debug("[{}] 감시 중....", watcherName);
+				while (t_wait < idleMils){
 					try {
-						this.wait(idleMils);
+						this.wait(1000);
 					} catch (InterruptedException e) {
 						log.error("감시 대기 중 InterruptedException 발생, 에러상세:{}",e.getMessage());
 						break;
 					}
+					t_wait += 1000;
 				}
 			}
 
 		}
+		
 	}
 	
-	public String sendAlram() {
-		notificater.sendNotification(watcherName);
-		return notificater.getSendMessage();
+	public int sendAlram() {
+		int rslt=notificater.sendNotification(watcherName);
+		if(rslt >0) {
+			log.info("{} 채널 알람발송, 내용: {}", notificater.getChannel() ,notificater.getSendMessage());
+		}else if(rslt == 0 ) {
+			log.info("{} 채널 알람발송 실패, 무시건수{}", notificater.getChannel() ,notificater.getIgnoreCount());
+		}else {
+			log.error("{} 채널 알람발송 중 에러 발생:{}", notificater.getSendMessage());
+		}
+		return rslt;
 	}
 	
 	public long now(boolean reload) {
@@ -189,5 +237,10 @@ public abstract class Watcher implements Runnable{
 	public void stop() {
 		isWorking = false;
 	}
+	
 
+    public void destroy() {
+    	stop();
+    }
+	
 }

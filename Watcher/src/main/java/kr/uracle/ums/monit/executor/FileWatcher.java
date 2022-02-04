@@ -90,7 +90,7 @@ public class FileWatcher extends Watcher {
 				break;
 		}
 		
-		if(rslt > 1) {
+		if(rslt == 1) {
 			notificater.setSendMessage(assembleMessage());
 		}
 		return rslt;
@@ -98,21 +98,22 @@ public class FileWatcher extends Watcher {
 
 	@Override
 	public void postDoing(int resultCode) {
-
+		//do nothing
 	}
 
 	private int fileCount() {
 		int rslt = 0;
 		try {
 			long count= Files.walk(path).filter(p ->  p.toFile().isFile() && p.toFile().length() > 0  ).count();
-			if(type == FileWatcherType.MAX && count > (int)figure) {
+			log.info("지정 타겟:{}, 현재 파일 수:{}, 제한 수치:{}", path.toAbsolutePath(), count, figure);
+			if(type == FileWatcherType.MAX && count > Integer.parseInt(figure.toString())) {
 				replaceMap.put("FILENAME", path.toString());
-				replaceMap.put("FILCOUNT", count);
+				replaceMap.put("FILECOUNT", count);
 				rslt = 1;
 			}
-			if(type == FileWatcherType.MIN && count < (int)figure) {
+			if(type == FileWatcherType.MIN && count < Integer.parseInt(figure.toString())) {
 				replaceMap.put("FILENAME", path.toString());
-				replaceMap.put("FILCOUNT", count);
+				replaceMap.put("FILECOUNT", count);
 				rslt = 1; 
 			}
 		} catch (IOException e) {
@@ -132,7 +133,10 @@ public class FileWatcher extends Watcher {
 			for(Path p : list) {
 				File f = p.toFile();
 				long modyTime = f.lastModified(); 
-				if(now - modyTime > ((int)figure*1000) ) return 1;
+				if(now - modyTime > (Integer.parseInt(figure.toString())*1000) ) {
+					replaceMap.put("FILENAME", f.getName());
+					return 1;
+				}
 			}
 		} catch (IOException e) {
 			log.error("{} 감시 중 에러 발생", path.toString());
@@ -146,6 +150,7 @@ public class FileWatcher extends Watcher {
 		int rslt = 0;
 		try {
 			long size= Files.walk(path).filter(p -> p.toFile().isFile()).mapToLong(p -> p.toFile().length()).sum();
+			replaceMap.put("FILESIZE", size);
 			if(size > (int)figure) return 1;
 		} catch (IOException e) {
 			log.error("{} 감시 중 에러 발생", path.toString());
@@ -166,8 +171,8 @@ public class FileWatcher extends Watcher {
 			String reple = m.group();
 			String key = reple.replaceAll("(\\$|\\{|\\})", "");
 			if(config.get(key) == null && replaceMap.get(key) == null) continue;
-			if(ObjectUtils.isNotEmpty(config.get(key))) message = message.replace(reple, config.get(key).toString());
-			if(ObjectUtils.isNotEmpty(replaceMap.get(key))) message = message.replace(reple, replaceMap.get(key).toString());
+			if(ObjectUtils.isNotEmpty(config.get(key))) message = message.replace(reple, "["+config.get(key).toString()+"]");
+			if(ObjectUtils.isNotEmpty(replaceMap.get(key))) message = message.replace(reple, "["+replaceMap.get(key).toString()+"]");
 		}
 		message = "["+watcherName+"] "+message;
 		return message;

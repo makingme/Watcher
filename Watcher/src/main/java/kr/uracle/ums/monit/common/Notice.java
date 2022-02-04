@@ -12,14 +12,17 @@ public abstract class Notice {
 	public enum NotificationType {
 		SMS, KKO, PUSH, NTOK, MAIL, LOG
 	}
-		
+	
+	public String name;
 	public String senderInfo;
 	public NotificationType channel = NotificationType.SMS;
 	public List<TargetInfo> targetList = new ArrayList<TargetInfo>(10);
 	public String sendMessage = null;
 	public String lodgerMessage = null;
-	public long sendTimeCyle = 5*60*1000;
-	private long sendTime = 0;
+	public long sendTimeCyle = 1*60*1000;
+	public long sendTime = 0;
+	public long ignoreCount =0;
+	public long sendCount =0;
 	
 	@Data
 	public class TargetInfo{
@@ -41,17 +44,39 @@ public abstract class Notice {
 		return targetList.size(); 
 	}
 	
+	public long increaseIgnoreCount() {
+		ignoreCount +=1;
+		return this.ignoreCount;
+	}
+	
+	public long clearIgnore() {
+		ignoreCount =0;
+		return this.ignoreCount;
+	}
+	
 	//지정 시간동안 한번만 알람 발송할수 있도록 boolean return 하는 메소드 필
 	protected boolean isOK() {
-		if(sendTime != 0 && System.currentTimeMillis() -sendTime < sendTimeCyle) return false;
+		long now = System.currentTimeMillis();
+
+		if(now - sendTime < sendTimeCyle) {
+			increaseIgnoreCount();
+			return false;
+		}else {
+			sendTime = now;
+			sendCount +=1;
+			clearIgnore();
+		}
+		
 		return true;
 	}
 	
 	public int sendNotification(String module) {
-
-		if(isOK()) return sendNotification();
-		
+		if(isOK()) {
+			return sendNotification();
+		}
 		return 0;
 	}
+	
+	// 무시 0, 정상일 경우 1, 에러 발생시 -1
 	abstract public int sendNotification();
 }

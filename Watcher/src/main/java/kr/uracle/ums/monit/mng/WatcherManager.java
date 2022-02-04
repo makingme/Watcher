@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.PreDestroy;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,10 @@ public class WatcherManager implements ApplicationRunner{
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
+		if(ObjectUtils.isEmpty(specManager.specMap("TARGETS")) ||  !(specManager.specMap("TARGETS") instanceof Map)) {
+			throw new Exception("수신자(TAGETS) 정보 누락");
+		}
+		Map<String, Object> targets = (Map<String, Object>)specManager.specMap("TARGETS");
 		for(Map.Entry<String, Object> element :specManager.getSpecMap().entrySet()) {
 			String key = element.getKey();
 			if(!typeMap.containsKey(key)) continue; 
@@ -47,8 +53,15 @@ public class WatcherManager implements ApplicationRunner{
 				List<Map<String, Object>> watcherList = (List<Map<String, Object>>)fileWatcherMap.get("WATCHERS");
 				for(Map<String, Object> config : watcherList) {
 					if(config.containsKey("_PATH"))continue;
+					for(Map.Entry<String, Object> t : targets.entrySet()) {
+						if(config.containsKey(t.getKey())) continue;
+						Object v = t.getValue();
+						if(ObjectUtils.isNotEmpty(v))config.put(t.getKey(), v);
+					}
 					Watcher watcher = new FileWatcher(WatcherTarget.FILE, config);
+					
 					Thread t = new Thread(watcher);
+					if(ObjectUtils.isNotEmpty(config.get("NAME")))t.setName(config.get("NAME").toString());
 					t.start();
 					aliveWatcher.put(watcher, t);
 				}
@@ -57,4 +70,10 @@ public class WatcherManager implements ApplicationRunner{
 		}
 		
 	}
+	
+	//TODO when shutdown it will be called
+	@PreDestroy
+    public void destroy() {
+        log.info("@@@@@@@@@@@@@@@@@@@Callback triggered - @PreDestroy@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+    }	
 }

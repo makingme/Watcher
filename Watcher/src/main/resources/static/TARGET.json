@@ -20,8 +20,8 @@
 				  "PATH"		:	"D:/URACLE/UMS3.0/TO-BE"
 				, "NAME"		:	"TO-BE파일최대갯수감시자"
 				, "TYPE"		:	"MAX"
-				, "FIGURE"		:	"10"
-				, "CYCLE"		:	"60"
+				, "FIGURE"		:	"5"
+				, "CYCLE"		:	"20"
 				, "NOTICE"		:	"SMS"
 				, "SENDER"		:	"02-320-1577"
 				, "MESSAGE"		:	"${PATH} 폴더 파일 최대 갯수 ${FIGURE} 초과(${FILECOUNT})"
@@ -33,35 +33,29 @@
 				, "NAME"		:	"ASIS파일잔존시간감시자"
 				, "TYPE"		:	"STAY"
 				, "FIGURE"		:	"60"
-				, "CYCLE"		:	"60"
+				, "CYCLE"		:	"20"
 				, "NOTICE"		:	"SMS"
 				, "SENDER"		:	"02-320-1577"
-				, "MESSAGE"		:	"${PATH}폴더 ${FIGURE} 초과 잔존 파일 발생, 파일명:${FILENAME}"		
+				, "MESSAGE"		:	"${PATH}폴더 ${FIGURE}초 초과 잔존 파일 발생, 파일명:${FILENAME}"		
 				, "TARGETS"		:	["ADMIN_GROUP1"]
 			
 			 }
-		],
-		
-		"ADMIN_GROUP1"	: 	
-		[
-			{
-			 	  "_alias"		:	"수신자 별명"
-			 	, "_contact"	:	"수식 식별 값 ((SMS/카카오톡/RCS:전화번호, PUSH: APPID-토큰, MAIL:메일주소, LOG:지정파일 전체경로)"  
-	
-			},
-			{
-			 	  "alias"	:	"홍길동"
-				, "contact"	:	"010-2631-3590"
-			},
-			{
-				  "alias"	:	"김철수"
-				, "contact"	:	"010-2631-3590"
-			} 
 		]
+	},
 	
+	"TARGETS"	: 	{
+		"ADMIN_GROUP1"	:
+			[
 	
+				{
+				 	  "alias"	:	"홍길동"
+					, "contact"	:	"010-2631-3590"
+				},
+				{
+					  "alias"	:	"김철수"
+					, "contact"	:	"010-2631-3590"
+				} 
+			]
 	}
-	
-	
 }
 

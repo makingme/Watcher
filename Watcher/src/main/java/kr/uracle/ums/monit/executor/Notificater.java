@@ -12,6 +12,6 @@ public class Notificater extends Notice {
 	private static final Logger log = LoggerFactory.getLogger(Notificater.class);
 
 	public int sendNotification() {
-		return 0;
+		return 1;
 	}
 }

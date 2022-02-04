@@ -60,7 +60,7 @@ public class SpecManager implements ApplicationRunner{
 			specMap = gson.fromJson(sb.toString(),  new TypeToken<Map<String, Object>>(){}.getType());
 			log.info("============================================================");
 			log.info("Target Spec {} 파일 로딩 완료", path);
-			log.debug(gson.toJson(specMap));
+			//log.debug(gson.toJson(specMap));
 			log.info("============================================================");
 		}catch (FileNotFoundException e) {
 			log.error("{} 위치에 Targer 설정 파일이 없습니다.", path);
