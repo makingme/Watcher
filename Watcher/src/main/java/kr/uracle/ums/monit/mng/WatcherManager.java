@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import kr.uracle.ums.monit.common.Watcher;
 import kr.uracle.ums.monit.common.Watcher.WatcherTarget;
 import kr.uracle.ums.monit.executor.FileWatcher;
+import kr.uracle.ums.monit.vo.WatcherHistoryVo;
 
 
 @Order(10)
@@ -32,6 +33,8 @@ public class WatcherManager implements ApplicationRunner{
 	public static final Logger log = LoggerFactory.getLogger(WatcherManager.class);
 	
 	static ConcurrentHashMap<Watcher, Thread> aliveWatcher = new ConcurrentHashMap<Watcher, Thread>() ;
+	
+	static ConcurrentHashMap<String, WatcherHistoryVo> watcherHistoryMap = new ConcurrentHashMap<String, WatcherHistoryVo>() ;
 	
 	public final static Map<String, String> typeMap = Stream.of(new String[][]{
 		{"FILE", ""} ,{"LOG", "" }, {"TABLE", ""}
