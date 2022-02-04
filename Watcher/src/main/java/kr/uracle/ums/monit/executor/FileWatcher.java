@@ -16,6 +16,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import kr.uracle.ums.monit.common.Watcher;
+
 
 
 public class FileWatcher extends Watcher {
@@ -93,6 +95,12 @@ public class FileWatcher extends Watcher {
 		if(rslt == 1) {
 			notificater.setSendMessage(assembleMessage());
 		}
+		
+//		long maxBytes = Runtime.getRuntime().maxMemory();
+//		long toBytes = Runtime.getRuntime().totalMemory();
+//		long fBytes = Runtime.getRuntime().freeMemory();
+//		log.info("MAX MEMORY:{}, TOTAL MEMORY:{}, FREE MEMORY:{}", (maxBytes / 1024 / 1024 + "M"), (toBytes / 1024 / 1024 + "M"), (fBytes / 1024 / 1024 + "M"));
+
 		return rslt;
 	}
 

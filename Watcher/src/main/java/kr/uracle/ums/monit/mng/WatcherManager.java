@@ -17,9 +17,10 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import kr.uracle.ums.monit.common.Watcher;
+import kr.uracle.ums.monit.common.Watcher.WatcherTarget;
 import kr.uracle.ums.monit.executor.FileWatcher;
-import kr.uracle.ums.monit.executor.Watcher;
-import kr.uracle.ums.monit.executor.Watcher.WatcherTarget;
+
 
 @Order(10)
 @Component
@@ -74,6 +75,26 @@ public class WatcherManager implements ApplicationRunner{
 	//TODO when shutdown it will be called
 	@PreDestroy
     public void destroy() {
-        log.info("@@@@@@@@@@@@@@@@@@@Callback triggered - @PreDestroy@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+		//ConcurrentHashMap<Watcher, Thread> aliveWatcher
+		for( Map.Entry<Watcher, Thread> m: aliveWatcher.entrySet()) {
+			Thread t = m.getValue();
+			if(!t.isAlive()) continue;
+			
+			Watcher w =m.getKey();
+			w.stop();
+			t.interrupt();
+			try {
+				t.join(2000);
+				if(!t.isAlive()) {
+					log.info("{} 중지 완료!!", t.getName());
+				}else {
+					log.info("{} 중지 실패!!", t.getName());
+					log.info("Thread 상태:{}", t.getState());
+				}
+			} catch (InterruptedException e) {
+				log.error("{} 중지 중 에러 발생, 에러 상세:{}", t.getName(), e.getMessage());
+			}
+			
+		}
     }	
 }

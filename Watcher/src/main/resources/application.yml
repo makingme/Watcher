@@ -12,6 +12,7 @@ spring:
 
 
 server:  shutdown: graceful
-
+  tomcat:
+    threads:      max: 5
 spec:
   target-path : static/TARGET.json

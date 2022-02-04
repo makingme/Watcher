@@ -126,6 +126,11 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+ 					<jvmArguments>
+                    	-Xms64m
+                    	-Xmx64m
+                    	-Dtemp=test
+                	</jvmArguments>		
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>

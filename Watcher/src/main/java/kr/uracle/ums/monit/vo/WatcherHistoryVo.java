@@ -1,7 +1,8 @@
 package kr.uracle.ums.monit.vo;
 
-import kr.uracle.ums.monit.executor.Watcher.WatcherState;
-import kr.uracle.ums.monit.executor.Watcher.WatcherTarget;
+
+import kr.uracle.ums.monit.common.Watcher.WatcherState;
+import kr.uracle.ums.monit.common.Watcher.WatcherTarget;
 import lombok.Data;
 
 @Data
