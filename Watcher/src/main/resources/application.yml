@@ -11,8 +11,10 @@ spring:
     password: Make!009!009,Make!009!009
 
 
-server:  shutdown: graceful
+server:
+  port: 8080  shutdown: graceful
   tomcat:
     threads:      max: 5
+  servlet:    context-path: /
 spec:
   target-path : static/TARGET.json
